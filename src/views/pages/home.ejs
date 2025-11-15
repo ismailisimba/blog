@@ -1,0 +1,40 @@
+<%- include('../partials/_header', { user: user }) %>
+
+<div class="space-y-12">
+  <% if (featuredArticles.length > 0) { %>
+    <section class="featured-articles">
+      <h2 class="text-3xl font-bold border-b-2 border-primary pb-2 mb-6">Featured Posts</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <% featuredArticles.forEach(article => { %>
+          <%- include('../partials/_articleCard', { article: article }) %>
+        <% }) %>
+      </div>
+    </section>
+  <% } %>
+
+    <% if (popularArticles.length > 0) { %>
+    <section class="popular-articles">
+      <h2 class="text-3xl font-bold border-b-2 border-primary pb-2 mb-6">Popular Posts</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <% popularArticles.forEach(article => { %>
+          <%- include('../partials/_articleCard', { article: article }) %>
+        <% }) %>
+      </div>
+    </section>
+  <% } %>
+
+    <% if (latestArticles.length > 0) { %>
+    <section class="latest-articles">
+      <h2 class="text-3xl font-bold border-b-2 border-primary pb-2 mb-6">latest Posts</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <% latestArticles.forEach(article => { %>
+          <%- include('../partials/_articleCard', { article: article }) %>
+        <% }) %>
+      </div>
+    </section>
+  <% } %>
+  
+  <!-- ... Repeat this structure for popular and latest articles, changing the h2 text ... -->
+</div>
+
+<%- include('../partials/_footer') %>

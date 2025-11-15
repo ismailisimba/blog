@@ -4,18 +4,40 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-     "start": "node src/index.js",
-     "dev": "nodemon src/index.js"
-  },
+  "start": "node src/index.js",
+  "build:css": "tailwindcss -i ./src/public/css/input.css -o ./src/public/css/output.css",
+  "watch:css": "tailwindcss -i ./src/public/css/input.css -o ./src/public/css/output.css --watch",
+  "dev": "concurrently \"npm:watch:css\" \"nodemon src/index.js\""
+},
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "@google-cloud/storage": "^7.17.3",
+    "@prisma/client": "^6.19.0",
+    "bcrypt": "^6.0.0",
     "dotenv": "^17.2.3",
-    "express": "^5.1.0"
+    "ejs": "^3.1.10",
+    "express": "^5.1.0",
+    "express-session": "^1.18.2",
+    "marked": "^17.0.0",
+    "multer": "^2.0.2",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0",
+    "passport-local": "^1.0.0",
+    "slugify": "^1.6.6"
   },
   "devDependencies": {
-    "nodemon": "^3.1.11"
+    "@tailwindcss/cli": "^4.1.17",
+    "@tailwindcss/typography": "^0.5.19",
+    "autoprefixer": "^10.4.22",
+    "concurrently": "^9.2.1",
+    "nodemon": "^3.1.11",
+    "postcss": "^8.5.6",
+    "prisma": "^6.19.0"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
   }
 }

@@ -1,0 +1,28 @@
+<%- include('../../partials/_header', { user: user }) %>
+
+<h2>Create New Article</h2>
+<!-- Add enctype here! -->
+<form action="/articles" method="POST" enctype="multipart/form-data">
+  <div>
+    <label for="title">Title</label>
+    <input type="text" name="title" id="title" required>
+  </div>
+
+  <!-- Add this new file input -->
+  <div>
+    <label for="headerImage">Header Image</label>
+    <input type="file" name="headerImage" id="headerImage" accept="image/*">
+  </div>
+
+  <div>
+    <label for="content">Content</label>
+    <textarea name="content" id="markdown-editor"></textarea>
+  </div>
+  <button type="submit">Publish Article</button>
+</form>
+
+<script>
+  const easyMDE = new EasyMDE({element: document.getElementById('markdown-editor')});
+</script>
+
+<%- include('../../partials/_footer') %>

@@ -1,0 +1,46 @@
+<%- include('../../partials/_header', { user: user }) %>
+
+<div class="max-w-4xl mx-auto">
+  <% if (article.headerImageUrl) { %>
+    <img src="<%= article.headerImageUrl %>" alt="<%= article.title %> header image" class="w-full rounded-lg shadow-lg mb-8" style="max-height: 500px; object-fit: cover;">
+  <% } %>
+  
+  <h1 class="text-4xl md:text-5xl font-bold text-text-main mb-4"><%= article.title %></h1>
+  <p class="text-gray-500 mb-8">By <%= article.author.name %> on <%= article.createdAt.toDateString() %></p>
+  
+  <div class="article-content prose lg:prose-xl max-w-none">
+    <%- htmlContent %>
+  </div>
+
+  <hr class="my-12">
+
+  <section class="comments-section">
+  <h1 class="text-2xl font-bold mb-6 text-center">Comments</h1>
+  <% if (user) { %>
+    <!-- Comment Form for logged-in users -->
+    <form action="/articles/<%= article.slug %>/comments" method="POST" class="space-y-6">
+      <textarea name="text" placeholder="Join the discussion..." required></textarea>
+      <button type="submit">Post Comment</button>
+    </form>
+  <% } else { %>
+    <p><a href="/login">Log in</a> to post a comment.</p>
+  <% } %>
+
+  <!-- Display existing comments -->
+  <div class="comments-list">
+    <% if (article.comments.length > 0) { %>
+      <% article.comments.forEach(comment => { %>
+        <div class="comment">
+          <p><strong><%= comment.author.name %></strong> said:</p>
+          <p><%= comment.text %></p>
+          <small><%= comment.createdAt.toLocaleString() %></small>
+        </div>
+      <% }) %>
+    <% } else { %>
+      <p>No comments yet. Be the first!</p>
+    <% } %>
+  </div>
+</section>
+</div>
+
+<%- include('../../partials/_footer') %>

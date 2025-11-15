@@ -1,21 +1,52 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import session from 'express-session';
+import passport from 'passport';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { renderHomepage } from './controllers/articleController.js'; // Import the new function
 
-// Load environment variables from .env file
+// Import Passport configuration
+import './services/passport.js';
+
+// Load environment variables
 dotenv.config();
 
-// Initialize the Express app
-const app = express();
+// ESM doesn't have __dirname, so we create it
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// Define a port, falling back to 3000 if not specified in .env
+const app = express();
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3000;
 
-// Define a basic route for the homepage
-app.get('/', (req, res) => {
-  res.send('Hello, Artsy World!');
-});
+// --- MIDDLEWARE SETUP ---
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Start the server and listen for connections
+// Session Middleware
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'a_very_secret_key_for_development',
+  resave: false,
+  saveUninitialized: false,
+}));
+
+// Passport Middleware
+app.use(passport.initialize());
+app.use(passport.session());
+
+import authRoutes from './routes/authRoutes.js';
+import articleRoutes from './routes/articleRoutes.js';
+app.use(authRoutes);
+app.use(articleRoutes); 
+
+// --- ROUTES ---
+app.get('/', renderHomepage);
+
+// --- SERVER START ---
 app.listen(PORT, () => {
   console.log(`Server is running at http://localhost:${PORT}`);
 });

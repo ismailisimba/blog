@@ -1,8 +1,10 @@
 # Dependencies
 node_modules
+config
 
 # Environment variables
 .env
 
 # Logs
 npm-debug.log*
+/src/generated/prisma
