@@ -18,12 +18,12 @@
       <a href="/" class="text-2xl font-bold text-primary hover:text-accent">Artsy Thoughts</a>
       <div class="space-x-6 flex items-center">
         <% if (user) { %>
-          <a href="/articles/new" class="bg-primary text-white px-4 py-2 rounded-md hover:bg-accent transition duration-300">New Article</a>
+          <a href="/articles/new" class="bg-primary text-gray-600 px-4 py-2 rounded-md hover:bg-accent transition duration-300">New Article</a>
           <span class="text-gray-700">Welcome, <%= user.name %></span>
           <a href="/logout" class="text-gray-600 hover:text-primary">Logout</a>
         <% } else { %>
           <a href="/login" class="text-gray-600 hover:text-primary">Login</a>
-          <a href="/register" class="bg-primary text-white px-4 py-2 rounded-md hover:bg-accent transition duration-300">Register</a>
+          <a href="/register" class="bg-primary text-gray-600 px-4 py-2 rounded-md hover:bg-accent transition duration-300">Register</a>
         <% } %>
       </div>
     </nav>
