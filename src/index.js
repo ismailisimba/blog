@@ -63,8 +63,10 @@ app.use(passport.session());
 
 import authRoutes from './routes/authRoutes.js';
 import articleRoutes from './routes/articleRoutes.js';
+import apiRoutes from './routes/apiRoutes.js';
 app.use(authRoutes);
-app.use(articleRoutes); 
+app.use(articleRoutes);
+app.use('/api', apiRoutes);  
 
 // --- ROUTES ---
 app.get('/', renderHomepage);

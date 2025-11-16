@@ -25,7 +25,76 @@
 </form>
 
 <script>
-  const easyMDE = new EasyMDE({element: document.getElementById('markdown-editor')});
+  function uploadFileAndInsertLink(file, editor) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    fetch('/api/upload', {
+      method: 'POST',
+      body: formData,
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      const fileUrl = data.url;
+      const cm = editor.codemirror;
+      const doc = cm.getDoc();
+      const cursor = doc.getCursor();
+
+      // Check file extension to decide on link format
+      const isImage = /\.(jpe?g|png|gif)$/i.test(fileUrl);
+      let linkMarkdown;
+
+      if (isImage) {
+        // Insert image markdown
+        linkMarkdown = `![${file.name}](${fileUrl})`;
+      } else {
+        // Insert standard link markdown for other files
+        linkMarkdown = `[${file.name}](${fileUrl})`;
+      }
+      
+      doc.replaceRange(linkMarkdown, cursor);
+    })
+    .catch(error => {
+      console.error('Upload failed:', error);
+      alert('File upload failed!');
+    });
+  }
+
+  const easyMDE = new EasyMDE({
+    element: document.getElementById('markdown-editor'),
+    spellChecker: false,
+    // Enable image handling
+    uploadImage: true,
+    // Define our custom uploader
+    imageUploadFunction: (file, onSuccess, onError) => {
+      // EasyMDE's API is designed for a success callback, but our fetch logic handles it.
+      // We'll wrap our function to fit this.
+      uploadFileAndInsertLink(file, easyMDE);
+      // We call onSuccess to prevent EasyMDE from showing its own error message.
+      onSuccess("upload handled by custom function"); 
+    },
+    // Custom handler for pasting files
+    previewClass: ["editor-preview", "prose", "lg:prose-xl"],
+    // You might need to add other options here from your previous setup
+  });
+
+  // Add a paste event listener for more robust file handling
+  easyMDE.codemirror.on('paste', (cm, event) => {
+    const items = (event.clipboardData || event.originalEvent.clipboardData).items;
+    for (const item of items) {
+      if (item.kind === 'file') {
+        event.preventDefault();
+        const file = item.getAsFile();
+        uploadFileAndInsertLink(file, easyMDE);
+      }
+    }
+  });
 </script>
+
 
 <%- include('../../partials/_footer') %>
