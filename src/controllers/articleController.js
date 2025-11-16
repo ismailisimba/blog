@@ -206,8 +206,6 @@ export const renderEditForm = async (req, res) => {
       return res.status(403).send('Forbidden: You do not have permission to edit this article.');
     }
 
-    console.log('Rendering edit form for article:', article);
-    console.log('Current user:', req.user);
 
     res.render('pages/articles/edit', { article, user: req.user });
   } catch (error) {
@@ -220,7 +218,9 @@ export const renderEditForm = async (req, res) => {
 export const updateArticle = async (req, res) => {
   try {
     const { slug } = req.params;
-    const { title, content } = req.body;
+    const { title, content, action } = req.body;
+
+    console.log('Update action:', action);
 
     // Optional but good practice: Re-check authorization before updating
     const article = await prisma.article.findUnique({ where: { slug } });
@@ -237,6 +237,7 @@ export const updateArticle = async (req, res) => {
         title,
         content,
         slug: newSlug,
+        published: action === 'publish',
       },
     });
 

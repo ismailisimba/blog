@@ -10,6 +10,11 @@ import methodOverride from 'method-override';
 // Import Passport configuration
 import './services/passport.js';
 
+// --- NEW IMPORTS ---
+import pg from 'pg'; // The native postgres driver
+import connectPgSimple from 'connect-pg-simple';
+// --- END NEW IMPORTS ---
+
 // Load environment variables
 dotenv.config();
 
@@ -30,10 +35,26 @@ app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride('_method')); 
 
 // Session Middleware
+const PgStore = connectPgSimple(session);
+const pgPool = new pg.Pool({
+  // Use the DATABASE_URL from your environment variables
+  connectionString: process.env.DATABASE_URL,
+  // For production (Cloud Run), you might need SSL, but the Cloud SQL Proxy handles this.
+  // For local dev, you might set ssl: false. This setup works for both.
+});
+
+// Session Middleware (UPDATED)
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'a_very_secret_key_for_development',
+  store: new PgStore({
+    pool: pgPool,
+    createTableIfMissing: true, // Automatically creates the session table
+  }),
+  secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
+  cookie: {
+    maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+  }
 }));
 
 // Passport Middleware
