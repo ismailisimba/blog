@@ -5,6 +5,7 @@ import passport from 'passport';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { renderHomepage } from './controllers/articleController.js'; // Import the new function
+import methodOverride from 'method-override';
 
 // Import Passport configuration
 import './services/passport.js';
@@ -26,6 +27,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(methodOverride('_method')); 
 
 // Session Middleware
 app.use(session({

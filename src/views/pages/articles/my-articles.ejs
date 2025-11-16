@@ -1,0 +1,30 @@
+<%- include('../../partials/_header', { user: user }) %>
+
+<h1 class="text-3xl font-bold border-b-2 border-primary pb-2 mb-6"><%= pageTitle %></h1>
+
+<div class="space-y-4">
+  <% if (articles.length > 0) { %>
+    <% articles.forEach(article => { %>
+      <div class="p-4 bg-white rounded-lg shadow-md flex justify-between items-center">
+        <div>
+          <a href="/articles/<%= article.slug %>" class="text-xl font-bold hover:text-primary"><%= article.title %></a>
+          <div class="text-sm text-gray-500 mt-1">
+            <% if (article.published) { %>
+              <span class="text-green-600 font-semibold">Published</span>
+            <% } else { %>
+              <span class="text-yellow-600 font-semibold">Draft</span>
+            <% } %>
+            - Last updated: <%= article.updatedAt.toLocaleDateString() %>
+          </div>
+        </div>
+        <div>
+          <!-- We can add an 'Edit' button here later -->
+        </div>
+      </div>
+    <% }) %>
+  <% } else { %>
+    <p>You haven't created any articles yet. <a href="/articles/new" class="text-primary hover:underline">Write your first one!</a></p>
+  <% } %>
+</div>
+
+<%- include('../../partials/_footer') %>

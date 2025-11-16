@@ -17,7 +17,9 @@
     <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
       <a href="/" class="text-2xl font-bold text-primary hover:text-accent">Artsy Thoughts</a>
       <div class="space-x-6 flex items-center">
+         <a href="/articles" class="text-gray-600 hover:text-primary">All Articles</a> 
         <% if (user) { %>
+            <a href="/my-articles" class="text-gray-600 hover:text-primary">My Articles</a> 
           <a href="/articles/new" class="bg-primary text-gray-600 px-4 py-2 rounded-md hover:bg-accent transition duration-300">New Article</a>
           <span class="text-gray-700">Welcome, <%= user.name %></span>
           <a href="/logout" class="text-gray-600 hover:text-primary">Logout</a>

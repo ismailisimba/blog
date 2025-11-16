@@ -12,10 +12,9 @@ export const renderCreateForm = (req, res) => {
 // Handles the submission of the new article form
 export const createArticle = async (req, res) => {
   try {
-    const { title, content } = req.body;
+    const { title, content, action } = req.body; // 'action' comes from the button
     let imageUrl = null;
 
-    // Check if a file was uploaded
     if (req.file) {
       imageUrl = await uploadFile(req.file);
     }
@@ -24,10 +23,11 @@ export const createArticle = async (req, res) => {
       data: {
         title,
         content,
-        headerImageUrl: imageUrl, // Save the URL to the database
+        headerImageUrl: imageUrl,
         slug: slugify(title, { lower: true, strict: true }),
         authorId: req.user.id,
-        published: true,
+        // Set 'published' based on the button clicked
+        published: action === 'publish',
       },
     });
     res.redirect(`/articles/${newArticle.slug}`);
@@ -75,6 +75,7 @@ export const showArticle = async (req, res) => {
 
     const htmlContent = marked.parse(article.content);
 
+
     res.render('pages/articles/show', { article, htmlContent, user: req.user });
   } catch (error) {
     console.error(error);
@@ -118,3 +119,130 @@ export const renderHomepage = async (req, res) => {
   }
 };
 
+
+
+// Lists all published articles, sorted by most recent
+export const listAllArticles = async (req, res) => {
+  try {
+    const articles = await prisma.article.findMany({
+      where: { published: true },
+      include: { author: true },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    res.render('pages/articles/all', {
+      user: req.user,
+      articles,
+      pageTitle: 'All Articles'
+    });
+  } catch (error) {
+    console.error('Error fetching all articles:', error);
+    res.status(500).send('Error loading articles');
+  }
+};
+
+
+export const toggleFeaturedStatus = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const article = await prisma.article.findUnique({
+      where: { slug },
+    });
+
+    if (!article) {
+      return res.status(404).send('Article not found');
+    }
+
+    await prisma.article.update({
+      where: { slug },
+      data: { isFeatured: !article.isFeatured }, // Flip the boolean
+    });
+
+    res.redirect(`/articles/${slug}`);
+  } catch (error) {
+    console.error('Error toggling featured status:', error);
+    res.redirect(`/articles/${slug}`);
+  }
+};
+
+
+
+// In src/controllers/articleController.js
+
+export const renderMyArticles = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const myArticles = await prisma.article.findMany({
+      where: { authorId: userId },
+      orderBy: { updatedAt: 'desc' },
+    });
+
+    res.render('pages/articles/my-articles', {
+      user: req.user,
+      articles: myArticles,
+      pageTitle: 'My Articles'
+    });
+  } catch (error) {
+    console.error('Error fetching user articles:', error);
+    res.redirect('/');
+  }
+};
+
+
+// Renders the form to edit an existing article
+export const renderEditForm = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const article = await prisma.article.findUnique({
+      where: { slug },
+    });
+
+    if (!article) {
+      return res.status(404).send('Article not found');
+    }
+
+    // AUTHORIZATION: Only allow the author or an Admin/Moderator to edit
+    if (req.user.id !== article.authorId && req.user.role !== 'ADMIN' && req.user.role !== 'MODERATOR') {
+      return res.status(403).send('Forbidden: You do not have permission to edit this article.');
+    }
+
+    console.log('Rendering edit form for article:', article);
+    console.log('Current user:', req.user);
+
+    res.render('pages/articles/edit', { article, user: req.user });
+  } catch (error) {
+    console.error('Error rendering edit form:', error);
+    res.status(500).send('Server Error');
+  }
+};
+
+// Handles the submission of the edit article form
+export const updateArticle = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const { title, content } = req.body;
+
+    // Optional but good practice: Re-check authorization before updating
+    const article = await prisma.article.findUnique({ where: { slug } });
+    if (req.user.id !== article.authorId && req.user.role !== 'ADMIN' && req.user.role !== 'MODERATOR') {
+      return res.status(403).send('Forbidden');
+    }
+
+    // If the title changes, the slug should change too
+    const newSlug = slugify(title, { lower: true, strict: true });
+
+    const updatedArticle = await prisma.article.update({
+      where: { slug },
+      data: {
+        title,
+        content,
+        slug: newSlug,
+      },
+    });
+
+    res.redirect(`/articles/${updatedArticle.slug}`);
+  } catch (error) {
+    console.error('Error updating article:', error);
+    res.redirect(`/`); // Redirect home on error
+  }
+};
