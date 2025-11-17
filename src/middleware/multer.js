@@ -7,6 +7,9 @@ const ALLOWED_MIMETYPES = [
   'image/gif',
   'application/pdf',
   'application/zip',
+  'image/webp',
+  'image/svg+xml',
+  'image/jpg',
 ];
 
 const fileFilter = (req, file, cb) => {

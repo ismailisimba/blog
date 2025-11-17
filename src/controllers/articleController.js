@@ -81,8 +81,34 @@ export const showArticle = async (req, res) => {
       return res.status(404).send('Article not found');
     }
 
-    const htmlContent = marked.parse(article.content);
+    // --- START OF NEW CODE ---
+    // Custom renderer for marked
+    const renderer = new marked.Renderer();
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
+
+    // Override how links are rendered
+    renderer.link = (href) => {
+      const title = href.title || '';
+      const text = href.text || '';
+      const isImageUrl = imageExtensions.some(ext => href.href.toLowerCase().endsWith(ext));
+      
+      // If the link is an image URL and the text is just the URL itself, render it as an image.
+      if (isImageUrl ) {
+        return `<img src="${href.href}" alt="User-embedded image" class="my-4 rounded-lg shadow-md max-w-full h-auto" loading="lazy">`;
+      }
+      
+      // Otherwise, render as a normal link.
+      // The `target="_blank"` opens the link in a new tab.
+      return `<a href="${href.href}" title="${title || ''}" target="_blank" rel="noopener noreferrer" class="text-green-500">${text}</a>`;
+    };
+    
+    // Use the custom renderer when parsing the markdown
+    const htmlContent = marked.parse(article.content, { renderer });
+    // --- END OF NEW CODE ---
+
     res.render('pages/articles/show', { article, htmlContent, user: req.user });
+
+
   } catch (error) {
     console.error(error);
     res.status(500).send('Server Error');

@@ -8,3 +8,7 @@ config
 # Logs
 npm-debug.log*
 /src/generated/prisma
+
+# Dependencies
+/src/public/js/languages
+/src/public/js/styles

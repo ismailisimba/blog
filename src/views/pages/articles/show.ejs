@@ -8,7 +8,7 @@
         <p class="font-bold">Admin/Mod Controls</p>
         <div class="flex items-center space-x-4">
            <!-- Edit Button -->
-           <% if (user.role === 'ADMIN' || user.role === 'MODERATOR') { %>
+           <% if (user.id === article.authorId || user.role === 'ADMIN' || user.role === 'MODERATOR') { %>
             <a href="/articles/<%= article.slug %>/edit" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition-colors text-sm">
               Edit
             </a>
@@ -53,7 +53,7 @@
       <span><%= article.viewCount %> views</span>
     </div>
 
-     <!-- Edit Button -->
+    <!-- Edit Button -->
            <% if (!article.published && (user.id === article.authorId)) { %>
             <a href="/articles/<%= article.slug %>/edit" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-md transition-colors text-sm">
               Edit
@@ -66,11 +66,14 @@
       <img src="<%= article.headerImageUrl %>" alt="Header image for <%= article.title %>" class="w-full h-auto rounded-lg shadow-lg mb-8">
     <% } %>
 
-    
-
-    <div class="prose prose-lg max-w-none dark:prose-invert">
+    <!-- START OF CHANGE: Added prose-a:* classes for link styling -->
+    <div class="prose prose-lg max-w-none dark:prose-invert
+                prose-a:text-blue-600 prose-a:underline hover:prose-a:text-blue-800
+                dark:prose-a:text-blue-400 dark:hover:prose-a:text-blue-300
+                prose-pre:max-h-[30rem] prose-pre:overflow-auto">
       <%- htmlContent %>
     </div>
+    <!-- END OF CHANGE -->
     
     <hr class="my-12 border-gray-300 dark:border-gray-700">
 
@@ -107,3 +110,5 @@
 </main>
 
 <%- include('../../partials/_footer') %>
+
+
