@@ -1,4 +1,5 @@
 import { uploadFile } from '../services/storage.js';
+import { prisma } from '../services/prisma.js';
 
 export const handleFileUpload = async (req, res) => {
   try {
@@ -6,7 +7,17 @@ export const handleFileUpload = async (req, res) => {
       return res.status(400).json({ error: 'No file uploaded.' });
     }
 
-    const publicUrl = await uploadFile(req.file);
+    const { publicUrl, fileName } = await uploadFile(req.file);
+
+    // Save file metadata to the database
+    await prisma.uploadedFile.create({
+      data: {
+        url: publicUrl,
+        fileName: fileName,
+        userId: req.user.id,
+      },
+    });
+
 
     // Send back the public URL in a JSON response
     res.status(200).json({ url: publicUrl });

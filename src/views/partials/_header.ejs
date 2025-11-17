@@ -1,33 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Artsy Thoughts</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css">
-<script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
-  <!-- Link to the GENERATED CSS file -->
-  <link rel="stylesheet" href="/css/output.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artsy Thoughts</title>
+    <link rel="stylesheet" href="/css/output.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css">
+    <script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
 </head>
-<body class="bg-background font-sans text-text-main">
-  <header class="bg-white shadow-md">
-    <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
-      <a href="/" class="text-2xl font-bold text-primary hover:text-accent">Artsy Thoughts</a>
-      <div class="space-x-6 flex items-center">
-         <a href="/articles" class="text-gray-600 hover:text-primary">All Articles</a> 
-        <% if (user) { %>
-            <a href="/my-articles" class="text-gray-600 hover:text-primary">My Articles</a> 
-          <a href="/articles/new" class="bg-primary text-gray-600 px-4 py-2 rounded-md hover:bg-accent transition duration-300">New Article</a>
-          <span class="text-gray-700">Welcome, <%= user.name %></span>
-          <a href="/logout" class="text-gray-600 hover:text-primary">Logout</a>
-        <% } else { %>
-          <a href="/login" class="text-gray-600 hover:text-primary">Login</a>
-          <a href="/register" class="bg-primary text-gray-600 px-4 py-2 rounded-md hover:bg-accent transition duration-300">Register</a>
-        <% } %>
-      </div>
-    </nav>
-  </header>
-  <main class="container mx-auto px-6 py-8">
+<body class="bg-background dark:bg-gray-900 font-sans">
+    <header class="bg-white dark:bg-gray-800 shadow-sm">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="/" class="text-2xl font-bold text-primary dark:text-white">Artsy Thoughts</a>
+            <div class="flex items-center space-x-6">
+                <a href="/articles" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-white">All Articles</a>
+
+                <% if (locals.user) { %>
+                    <!-- Logged-in user links -->
+                    <a href="/my-articles" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-white">My Articles</a>
+                    <a href="/profile" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-white">Profile</a>
+
+                    <% if (user.role === 'ADMIN') { %>
+                        <a href="/admin/users" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-white">Admin Panel</a>
+                    <% } %>
+
+                    <a href="/logout" class="bg-primary hover:bg-accent text-white font-bold py-2 px-4 rounded-md transition-colors">Logout</a>
+                    <a href="/articles/new" class="bg-accent hover:bg-primary text-white font-bold py-2 px-4 rounded-md transition-colors">New Post</a>
+                <% } else { %>
+                    <!-- Guest user links -->
+                    <a href="/login" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-white">Login</a>
+                    <a href="/register" class="bg-primary hover:bg-accent text-white font-bold py-2 px-4 rounded-md transition-colors">Register</a>
+                <% } %>
+            </div>
+        </nav>
+    </header>

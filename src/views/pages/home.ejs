@@ -2,8 +2,8 @@
 
 <div class="space-y-12">
   <% if (featuredArticles.length > 0) { %>
-    <section class="featured-articles">
-      <h2 class="text-3xl font-bold border-b-2 border-primary pb-2 mb-6">Featured Posts</h2>
+    <section class="featured-articles mx-auto my-12 px-4">
+      <h2 class="text-3xl font-bold border-b-2 border-primary pb-2 mb-6 text-gray-200">Featured Posts</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         <% featuredArticles.forEach(article => { %>
           <%- include('../partials/_articleCard', { article: article }) %>
@@ -13,8 +13,8 @@
   <% } %>
 
     <% if (popularArticles.length > 0) { %>
-    <section class="popular-articles">
-      <h2 class="text-3xl font-bold border-b-2 border-primary pb-2 mb-6">Popular Posts</h2>
+    <section class="popular-articles mx-auto my-12 px-4">
+      <h2 class="text-3xl font-bold border-b-2 border-primary pb-2 mb-6 text-gray-200">Popular Posts</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         <% popularArticles.forEach(article => { %>
           <%- include('../partials/_articleCard', { article: article }) %>
@@ -24,8 +24,8 @@
   <% } %>
 
     <% if (latestArticles.length > 0) { %>
-    <section class="latest-articles">
-      <h2 class="text-3xl font-bold border-b-2 border-primary pb-2 mb-6">latest Posts</h2>
+    <section class="latest-articles mx-auto my-12 px-4">
+      <h2 class="text-3xl font-bold border-b-2 border-primary pb-2 mb-6 text-gray-200">Latest Posts</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         <% latestArticles.forEach(article => { %>
           <%- include('../partials/_articleCard', { article: article }) %>

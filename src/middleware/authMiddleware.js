@@ -21,3 +21,16 @@ export const hasRole = (role) => {
     res.status(403).send('Forbidden: You do not have permission to access this page.');
   };
 };
+
+
+export const hasAnyRole = (roles) => {
+  return (req, res, next) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send('Unauthorized: Please log in.');
+    }
+    if (roles.includes(req.user.role)) {
+      return next();
+    }
+    res.status(403).send('Forbidden: You do not have permission for this action.');
+  };
+};

@@ -1,8 +1,8 @@
 <%- include('../../partials/_header', { user: user }) %>
 
-<h1 class="text-3xl font-bold border-b-2 border-primary pb-2 mb-6"><%= pageTitle %></h1>
+<h1 class="text-3xl font-bold border-b-2 border-primary pb-2 mb-6 px-6 text-gray-200"><%= pageTitle %></h1>
 
-<div class="space-y-4">
+<div class="space-y-4 px-6 text-gr">
   <% if (articles.length > 0) { %>
     <% articles.forEach(article => { %>
       <div class="p-4 bg-white rounded-lg shadow-md flex justify-between items-center">

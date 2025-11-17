@@ -9,14 +9,23 @@ export const renderCreateForm = (req, res) => {
 };
 
 // Handles the submission of the new article form
-// Handles the submission of the new article form
 export const createArticle = async (req, res) => {
   try {
-    const { title, content, action } = req.body; // 'action' comes from the button
+    const { title, content, action } = req.body;
     let imageUrl = null;
 
     if (req.file) {
-      imageUrl = await uploadFile(req.file);
+      const { publicUrl, fileName } = await uploadFile(req.file);
+      imageUrl = publicUrl;
+
+      // Save file metadata to the database
+      await prisma.uploadedFile.create({
+        data: {
+          url: publicUrl,
+          fileName: fileName,
+          userId: req.user.id,
+        },
+      });
     }
 
     const newArticle = await prisma.article.create({
@@ -26,7 +35,6 @@ export const createArticle = async (req, res) => {
         headerImageUrl: imageUrl,
         slug: slugify(title, { lower: true, strict: true }),
         authorId: req.user.id,
-        // Set 'published' based on the button clicked
         published: action === 'publish',
       },
     });
@@ -42,40 +50,38 @@ export const showArticle = async (req, res) => {
   try {
     const { slug } = req.params;
     const article = await prisma.$transaction(async (tx) => {
-        const articleData = await prisma.article.findUnique({
-      where: { slug },
-      include: { author: true,
-         comments: {
-          include: {
-            author: true,
-          },
-          orderBy: {
-            createdAt: 'asc', // Show oldest comments first
+      const articleData = await tx.article.findUnique({
+        where: { slug },
+        include: {
+          author: true,
+          comments: {
+            include: { author: true },
+            orderBy: { createdAt: 'asc' },
           },
         },
-       }, // Include the author's details
-    });
+      });
 
-    if (!articleData) return null;
+      if (!articleData) return null;
 
-      // 2. Increment the view count
+      // Authorization check: Only Admins/Mods can see hidden articles
+      const canViewHidden = req.user && (req.user.role === 'ADMIN' || req.user.role === 'MODERATOR');
+      if (articleData.hidden && !canViewHidden) {
+        return null; // Pretend it doesn't exist for normal users
+      }
+      
       await tx.article.update({
         where: { slug },
         data: { viewCount: { increment: 1 } },
       });
 
       return articleData;
-
-
-    })
+    });
 
     if (!article) {
       return res.status(404).send('Article not found');
     }
 
     const htmlContent = marked.parse(article.content);
-
-
     res.render('pages/articles/show', { article, htmlContent, user: req.user });
   } catch (error) {
     console.error(error);
@@ -86,22 +92,24 @@ export const showArticle = async (req, res) => {
 
 export const renderHomepage = async (req, res) => {
   try {
+    const canViewHidden = req.user && (req.user.role === 'ADMIN' || req.user.role === 'MODERATOR');
+    const visibilityFilter = canViewHidden ? {} : { hidden: false };
+
     const featuredArticles = await prisma.article.findMany({
-      where: { published: true, isFeatured: true },
+      where: { published: true, isFeatured: true, ...visibilityFilter },
       include: { author: true },
       orderBy: { createdAt: 'desc' },
     });
 
     const popularArticles = await prisma.article.findMany({
-      where: { published: true },
+      where: { published: true, ...visibilityFilter },
       include: { author: true },
       orderBy: { viewCount: 'desc' },
-      take: 5, // Get the top 5 most popular
+      take: 5,
     });
     
-    // Fetch a list of the latest articles as the main feed
     const latestArticles = await prisma.article.findMany({
-      where: { published: true },
+      where: { published: true, ...visibilityFilter },
       include: { author: true },
       orderBy: { createdAt: 'desc' },
       take: 10,
@@ -119,13 +127,14 @@ export const renderHomepage = async (req, res) => {
   }
 };
 
-
-
 // Lists all published articles, sorted by most recent
 export const listAllArticles = async (req, res) => {
   try {
+    const canViewHidden = req.user && (req.user.role === 'ADMIN' || req.user.role === 'MODERATOR');
+    const visibilityFilter = canViewHidden ? {} : { hidden: false };
+
     const articles = await prisma.article.findMany({
-      where: { published: true },
+      where: { published: true, ...visibilityFilter },
       include: { author: true },
       orderBy: { createdAt: 'desc' },
     });
@@ -155,7 +164,7 @@ export const toggleFeaturedStatus = async (req, res) => {
 
     await prisma.article.update({
       where: { slug },
-      data: { isFeatured: !article.isFeatured }, // Flip the boolean
+      data: { isFeatured: !article.isFeatured },
     });
 
     res.redirect(`/articles/${slug}`);
@@ -165,9 +174,29 @@ export const toggleFeaturedStatus = async (req, res) => {
   }
 };
 
+// NEW: Toggles the hidden status of an article
+export const toggleHiddenStatus = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const article = await prisma.article.findUnique({
+      where: { slug },
+    });
 
+    if (!article) {
+      return res.status(404).send('Article not found');
+    }
 
-// In src/controllers/articleController.js
+    await prisma.article.update({
+      where: { slug },
+      data: { hidden: !article.hidden },
+    });
+
+    res.redirect(`/articles/${slug}`);
+  } catch (error) {
+    console.error('Error toggling hidden status:', error);
+    res.redirect(`/articles/${slug}`);
+  }
+};
 
 export const renderMyArticles = async (req, res) => {
   try {
@@ -201,7 +230,6 @@ export const renderEditForm = async (req, res) => {
       return res.status(404).send('Article not found');
     }
 
-    // AUTHORIZATION: Only allow the author or an Admin/Moderator to edit
     if (req.user.id !== article.authorId && req.user.role !== 'ADMIN' && req.user.role !== 'MODERATOR') {
       return res.status(403).send('Forbidden: You do not have permission to edit this article.');
     }
@@ -220,15 +248,11 @@ export const updateArticle = async (req, res) => {
     const { slug } = req.params;
     const { title, content, action } = req.body;
 
-    console.log('Update action:', action);
-
-    // Optional but good practice: Re-check authorization before updating
     const article = await prisma.article.findUnique({ where: { slug } });
     if (req.user.id !== article.authorId && req.user.role !== 'ADMIN' && req.user.role !== 'MODERATOR') {
       return res.status(403).send('Forbidden');
     }
 
-    // If the title changes, the slug should change too
     const newSlug = slugify(title, { lower: true, strict: true });
 
     const updatedArticle = await prisma.article.update({
@@ -244,6 +268,6 @@ export const updateArticle = async (req, res) => {
     res.redirect(`/articles/${updatedArticle.slug}`);
   } catch (error) {
     console.error('Error updating article:', error);
-    res.redirect(`/`); // Redirect home on error
+    res.redirect(`/`);
   }
 };

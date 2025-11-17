@@ -1,8 +1,8 @@
 <%- include('../../partials/_header', { user: user }) %>
 
 <div class="space-y-12">
-  <section class="all-articles">
-    <h1 class="text-3xl font-bold border-b-2 border-primary pb-2 mb-6"><%= pageTitle %></h1>
+  <section class="all-articles mx-auto my-12 px-4">
+    <h1 class="text-3xl font-bold border-b-2 border-primary pb-2 mb-6 text-gray-200"><%= pageTitle %></h1>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       <% if (articles.length > 0) { %>
         <% articles.forEach(article => { %>
