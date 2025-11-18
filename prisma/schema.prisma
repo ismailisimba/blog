@@ -38,6 +38,7 @@ model Article {
   id             String    @id @default(cuid())
   title          String
   slug           String    @unique
+  excerpt        String    @default("") 
   content        String
   headerImageUrl String?
   published      Boolean   @default(false)
@@ -71,3 +72,7 @@ model UploadedFile {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
+
+
+
+

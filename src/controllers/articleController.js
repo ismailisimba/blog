@@ -2,6 +2,7 @@ import { prisma } from '../services/prisma.js';
 import slugify from 'slugify';
 import { marked } from 'marked';
 import { uploadFile } from '../services/storage.js';
+import { truncateText } from '../utils/helpers.js'; 
 
 // Renders the form to create a new article
 export const renderCreateForm = (req, res) => {
@@ -11,7 +12,7 @@ export const renderCreateForm = (req, res) => {
 // Handles the submission of the new article form
 export const createArticle = async (req, res) => {
   try {
-    const { title, content, action } = req.body;
+    const { title, content, excerpt, action } = req.body;
     let imageUrl = null;
 
     if (req.file) {
@@ -32,6 +33,7 @@ export const createArticle = async (req, res) => {
       data: {
         title,
         content,
+        excerpt,
         headerImageUrl: imageUrl,
         slug: slugify(title, { lower: true, strict: true }),
         authorId: req.user.id,
@@ -101,10 +103,39 @@ export const showArticle = async (req, res) => {
       // The `target="_blank"` opens the link in a new tab.
       return `<a href="${href.href}" title="${title || ''}" target="_blank" rel="noopener noreferrer" class="text-green-500">${text}</a>`;
     };
+
+    // Override heading rendering to add IDs and anchor links
+    renderer.heading = (textObj) => {
+      const text = textObj.text || '';
+      const level = parseInt(textObj.depth, 10);
+      const escapedText = slugify(text, { lower: true, strict: true });
+      return `
+        <h${level} id="${escapedText}" class="group relative text-2xl font-bold mb-6 dark:text-white">
+          <a href="#${escapedText}" class="absolute -left-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-50 transition-opacity" aria-hidden="true">
+            <span class="text-gray-400 dark:text-gray-600">🔗</span>
+          </a>
+          ${text}
+        </h${level}>
+      `;
+    };
     
     // Use the custom renderer when parsing the markdown
     const htmlContent = marked.parse(article.content, { renderer });
     // --- END OF NEW CODE ---
+
+    const pageUrl = `${process.env.BASE_URL}/articles/${article.slug}`;
+    res.locals.seo = {
+      title: `${article.title} | Artsy Thoughts`,
+      description: article.excerpt || truncateText(article.content),
+      url: pageUrl,
+      image: article.headerImageUrl || `${process.env.BASE_URL}/default-share-image.jpg`,
+      type: 'article',
+      // For structured data
+      publishedDate: article.createdAt.toISOString(),
+      modifiedDate: article.updatedAt.toISOString(),
+      authorName: article.author.name
+    };
+    // --- END OF SEO DATA ---
 
     res.render('pages/articles/show', { article, htmlContent, user: req.user });
 
@@ -140,6 +171,17 @@ export const renderHomepage = async (req, res) => {
       orderBy: { createdAt: 'desc' },
       take: 10,
     });
+
+    // --- START OF SEO DATA ---
+    res.locals.seo = {
+      title: 'Artsy Thoughts | A Creative Blog',
+      description: 'Welcome to Artsy Thoughts, a creative space for artistic ideas, tutorials, and inspiration.',
+      url: process.env.BASE_URL,
+      image: `${process.env.BASE_URL}/default-share-image.jpg`,
+      type: 'website'
+    };
+    // --- END OF SEO DATA ---
+
 
     res.render('pages/home', {
       user: req.user,
@@ -272,7 +314,7 @@ export const renderEditForm = async (req, res) => {
 export const updateArticle = async (req, res) => {
   try {
     const { slug } = req.params;
-    const { title, content, action } = req.body;
+    const { title, content, excerpt, action } = req.body;
 
     const article = await prisma.article.findUnique({ where: { slug } });
     if (req.user.id !== article.authorId && req.user.role !== 'ADMIN' && req.user.role !== 'MODERATOR') {
@@ -286,6 +328,7 @@ export const updateArticle = async (req, res) => {
       data: {
         title,
         content,
+        excerpt,
         slug: newSlug,
         published: action === 'publish',
       },

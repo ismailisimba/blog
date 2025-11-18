@@ -52,11 +52,20 @@ import authRoutes from './routes/authRoutes.js';
 import articleRoutes from './routes/articleRoutes.js';
 import apiRoutes from './routes/apiRoutes.js';
 import userRoutes from './routes/userRoutes.js'; // <-- ADD THIS
+import seoRoutes from './routes/seoRoutes.js'; 
 
 app.use(authRoutes);
 app.use(articleRoutes);
 app.use('/api', apiRoutes);  
 app.use(userRoutes); // <-- AND THIS
+app.use(seoRoutes); // <-- ADD THIS
+
+// Add robots.txt route
+app.get('/robots.txt', (req, res) => {
+    res.type('text/plain');
+    const content = `User-agent: *\nAllow: /\n\nSitemap: ${process.env.BASE_URL}/sitemap.xml`;
+    res.send(content);
+});
 
 app.get('/', renderHomepage);
 

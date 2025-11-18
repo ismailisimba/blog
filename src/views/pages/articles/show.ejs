@@ -66,14 +66,14 @@
       <img src="<%= article.headerImageUrl %>" alt="Header image for <%= article.title %>" class="w-full h-auto rounded-lg shadow-lg mb-8">
     <% } %>
 
-    <!-- START OF CHANGE: Added prose-a:* classes for link styling -->
+    <!-- 
+      The prose class now automatically applies all the great styling we defined in tailwind.config.js.
+      We only need to keep the code block scrolling styles.
+    -->
     <div class="prose prose-lg max-w-none dark:prose-invert
-                prose-a:text-blue-600 prose-a:underline hover:prose-a:text-blue-800
-                dark:prose-a:text-blue-400 dark:hover:prose-a:text-blue-300
-                prose-pre:max-h-[30rem] prose-pre:overflow-auto">
+                prose-pre:max-h-[30rem] prose-pre:overflow-auto text-gray-800 dark:text-gray-200">
       <%- htmlContent %>
     </div>
-    <!-- END OF CHANGE -->
     
     <hr class="my-12 border-gray-300 dark:border-gray-700">
 
@@ -109,6 +109,43 @@
   </article>
 </main>
 
-<%- include('../../partials/_footer') %>
+<!-- ... existing content for show.ejs ... -->
 
+  </article>
+</main>
+
+<!-- START OF NEW CODE: JSON-LD Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "<%= locals.seo.url %>"
+  },
+  "headline": "<%= article.title %>",
+  "description": "<%= locals.seo.description %>",
+  "image": "<%= locals.seo.image %>",  
+  "author": {
+    "@type": "Person",
+    "name": "<%= locals.seo.authorName %>"
+  },  
+  "publisher": {
+    "@type": "Organization",
+    "name": "Artsy Thoughts",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "<%= process.env.BASE_URL %>/logo.png" 
+    }
+  },
+  "datePublished": "<%= locals.seo.publishedDate %>",
+  "dateModified": "<%= locals.seo.modifiedDate %>"
+}
+</script>
+<!-- END OF NEW CODE -->
+
+
+
+
+<%- include('../../partials/_footer') %>
 
