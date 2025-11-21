@@ -29,7 +29,13 @@ app.use(methodOverride('_method'));
 
 const PgStore = connectPgSimple(session);
 const pgPool = new pg.Pool({
-  connectionString: process.env.DATABASE_URL,
+  //connectionString: process.env.DATABASE_URL,
+  user: 'postgres',
+  host: 'localhost',
+  database: 'postgres',
+  password: process.env.DB_PASSWORD, // <-- ADD THIS LINE
+  port: 5432,
+
 });
 
 app.use(session({
@@ -53,12 +59,16 @@ import articleRoutes from './routes/articleRoutes.js';
 import apiRoutes from './routes/apiRoutes.js';
 import userRoutes from './routes/userRoutes.js'; // <-- ADD THIS
 import seoRoutes from './routes/seoRoutes.js'; 
+import fileRoutes from './routes/fileRoutes.js'; 
+
 
 app.use(authRoutes);
 app.use(articleRoutes);
 app.use('/api', apiRoutes);  
 app.use(userRoutes); // <-- AND THIS
 app.use(seoRoutes); // <-- ADD THIS
+app.use('/files', fileRoutes); 
+
 
 // Add robots.txt route
 app.get('/robots.txt', (req, res) => {

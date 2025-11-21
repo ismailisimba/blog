@@ -1,5 +1,7 @@
 import multer from 'multer';
 
+console.log('Initializing multer middleware with memory storage and file filter')
+
 // Define allowed file types
 const ALLOWED_MIMETYPES = [
   'image/jpeg',
@@ -10,6 +12,7 @@ const ALLOWED_MIMETYPES = [
   'image/webp',
   'image/svg+xml',
   'image/jpg',
+  'application/octet-stream'
 ];
 
 const fileFilter = (req, file, cb) => {

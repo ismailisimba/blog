@@ -1,15 +1,140 @@
   </main>
-  <footer class="bg-white mt-12 py-6 border-t">
-    <div class="container mx-auto text-center text-gray-500">
-      <p>&copy; <%= new Date().getFullYear() %> Artsy Thoughts. All rights reserved.</p>
+ <footer class="bg-gray-900 border-t border-gray-200 mt-12">
+  <div class="container mx-auto px-6 py-8">
+    <div class="flex flex-col md:flex-row justify-between items-center">
+      
+      <!-- Copyright Section -->
+      <div class="text-gray-200 text-sm mb-4 md:mb-0">
+        &copy; <%= new Date().getFullYear() %> Mnembo Blog. All rights reserved.
+      </div>
+
+      <!-- Placeholder Links -->
+      <div class="flex space-x-6">
+        <a href="https://mnembo.com/about.html" target="_blank" class="text-gray-200 hover:text-gray-900 text-sm transition-colors duration-200">
+            About Us
+        </a>
+        <a href="https://mnembo.com/privacy.html" target="_blank" class="text-gray-200 hover:text-gray-900 text-sm transition-colors duration-200">
+            Privacy Policy
+        </a>
+        <a href="https://mnembo.com/terms.html" target="_blank" class="text-gray-200 hover:text-gray-900 text-sm transition-colors duration-200">
+            Terms of Service
+        </a>
+      </div>
+
     </div>
-  </footer>
+  </div>
+</footer>
+
 
      <!-- START OF NEW CODE: Add highlight.js script and initialize it -->
     <script src="/js/highlight.min.js"></script>
     <script>hljs.highlightAll();</script>
     <!-- END OF NEW CODE -->
+        <!-- START OF NEW CODE: Mobile menu toggle script -->
+    <script>
+      const mobileMenuButton = document.getElementById('mobile-menu-button');
+      const mobileMenu = document.getElementById('mobile-menu');
+
+      mobileMenuButton.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+      });
+    </script>
+    <!-- END OF NEW CODE -->
+
+    <!-- src/views/partials/footer.ejs -->
+<!-- ... highlight.js scripts ... -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+
+<!-- Mobile menu toggle script -->
+<script> /* ... */ </script>
+
+<!-- Cropper Initialization Script (only for create/edit pages) -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.querySelector('.articleForm');
+        // Only run this script if we are on a page with the article form
+        if (!form) return;
+
+        const headerImageInput = document.getElementById('headerImage');
+        const modal = document.getElementById('cropperModal');
+        const imageToCrop = document.getElementById('imageToCrop');
+        const cropButton = document.getElementById('cropButton');
+        const cancelCrop = document.getElementById('cancelCrop');
+        const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+        let cropper;
+        let originalFile;
+
+        headerImageInput.addEventListener('change', (e) => {
+            const files = e.target.files;
+            if (files && files.length > 0) {
+                originalFile = files[0];
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    imageToCrop.src = event.target.result;
+                    modal.classList.remove('hidden');
+                    cropper = new Cropper(imageToCrop, {
+                        aspectRatio: 16 / 9,
+                        viewMode: 1,
+                        autoCropArea: 0.9,
+                    });
+                };
+                reader.readAsDataURL(originalFile);
+            }
+        });
+
+        cropButton.addEventListener('click', () => {
+            if (!cropper) return;
+
+            cropper.getCroppedCanvas({
+                width: 960,
+                height: 540,
+                imageSmoothingQuality: 'high',
+            }).toBlob((blob) => {
+                // Create a new File object from the blob
+                const croppedFile = new File([blob], originalFile.name, {
+                    type: 'image/jpeg',
+                    lastModified: Date.now()
+                });
+
+                // Use the DataTransfer API to create a new FileList
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(croppedFile);
+
+                // Replace the original file input's files with the new FileList
+                headerImageInput.files = dataTransfer.files;
+
+                // Update the preview
+                const previewUrl = URL.createObjectURL(blob);
+                imagePreviewContainer.innerHTML = `<img src="${previewUrl}" class="max-w-xs rounded" alt="Image preview">`;
+
+                closeModal();
+            }, 'image/jpeg', 0.85); // 0.85 quality
+        });
+
+        // --- UPDATED SECTION ---
+        cancelCrop.addEventListener('click', () => {
+             // Only clear the input if the user actually Cancelled
+            headerImageInput.value = ''; 
+            imagePreviewContainer.innerHTML = ''; // Optional: clear preview on cancel
+            closeModal();
+        });
+
+        function closeModal() {
+            if (cropper) {
+                cropper.destroy();
+                cropper = null;
+            }
+            modal.classList.add('hidden');
+        }
+    });
+</script>
+
 </body>
 </html>
+
+
+
+
+
 
 

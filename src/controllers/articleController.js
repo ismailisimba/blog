@@ -1,8 +1,35 @@
+//Start of articleController.js
+
 import { prisma } from '../services/prisma.js';
 import slugify from 'slugify';
+import { nanoid } from 'nanoid';
 import { marked } from 'marked';
-import { uploadFile } from '../services/storage.js';
-import { truncateText } from '../utils/helpers.js'; 
+import { processAndUploadImage, deleteFile } from '../services/storage.js';
+import { truncateText } from '../utils/helpers.js';
+
+// --- SECURITY IMPORTS ---
+import { JSDOM } from 'jsdom';
+import createDOMPurify from 'dompurify';
+
+// Setup DOMPurify for server-side sanitization
+const window = new JSDOM('').window;
+const DOMPurify = createDOMPurify(window);
+
+const generateUniqueSlug = async (title) => {
+  let slug = slugify(title, { lower: true, strict: true });
+  
+  // Check if this slug exists
+  const existing = await prisma.article.findUnique({ 
+    where: { slug: slug } 
+  });
+
+  // If it exists, append a random short ID (e.g., "my-title-xc92")
+  if (existing) {
+    slug = `${slug}-${nanoid(5)}`;
+  }
+
+  return slug;
+};
 
 // Renders the form to create a new article
 export const renderCreateForm = (req, res) => {
@@ -12,22 +39,24 @@ export const renderCreateForm = (req, res) => {
 // Handles the submission of the new article form
 export const createArticle = async (req, res) => {
   try {
-    const { title, content, excerpt, action } = req.body;
+    const { title, content, excerpt, action, headerImage } = req.body;
     let imageUrl = null;
 
     if (req.file) {
-      const { publicUrl, fileName } = await uploadFile(req.file);
+    
+      const { publicUrl, fileName } = await processAndUploadImage(
+        req.file.buffer,
+        req.file.originalname,
+        { resize: { width: 960, height: 540 } } // <-- Enforce dimensions
+      );
       imageUrl = publicUrl;
-
-      // Save file metadata to the database
       await prisma.uploadedFile.create({
-        data: {
-          url: publicUrl,
-          fileName: fileName,
-          userId: req.user.id,
-        },
+        data: { url: publicUrl, fileName: fileName, userId: req.user.id },
       });
     }
+
+
+    const finalSlug = await generateUniqueSlug(title);
 
     const newArticle = await prisma.article.create({
       data: {
@@ -35,7 +64,7 @@ export const createArticle = async (req, res) => {
         content,
         excerpt,
         headerImageUrl: imageUrl,
-        slug: slugify(title, { lower: true, strict: true }),
+        slug: finalSlug,
         authorId: req.user.id,
         published: action === 'publish',
       },
@@ -70,7 +99,7 @@ export const showArticle = async (req, res) => {
       if (articleData.hidden && !canViewHidden) {
         return null; // Pretend it doesn't exist for normal users
       }
-      
+
       await tx.article.update({
         where: { slug },
         data: { viewCount: { increment: 1 } },
@@ -86,41 +115,52 @@ export const showArticle = async (req, res) => {
     // --- START OF NEW CODE ---
     // Custom renderer for marked
     const renderer = new marked.Renderer();
-    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
 
     // Override how links are rendered
-    renderer.link = (href) => {
-      const title = href.title || '';
-      const text = href.text || '';
-      const isImageUrl = imageExtensions.some(ext => href.href.toLowerCase().endsWith(ext));
-      
-      // If the link is an image URL and the text is just the URL itself, render it as an image.
-      if (isImageUrl ) {
-        return `<img src="${href.href}" alt="User-embedded image" class="my-4 rounded-lg shadow-md max-w-full h-auto" loading="lazy">`;
+    renderer.link = ({ href, title, text }) => {
+      return `<a href="${href}" title="${title || ''}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">${text}</a>`;
+    };
+
+    renderer.image = ({ href, title, text }) => {
+      let alignClass = 'img-center'; // Default to center
+      let src = href;
+
+      if (src.endsWith('#left')) {
+          alignClass = 'img-left';
+          src = src.slice(0, -5); // Remove '#left' from src
+      } else if (src.endsWith('#right')) {
+          alignClass = 'img-right';
+          src = src.slice(0, -6); // Remove '#right' from src
+      } else if (src.endsWith('#center')) {
+          src = src.slice(0, -7); // Remove '#center' from src
       }
       
-      // Otherwise, render as a normal link.
-      // The `target="_blank"` opens the link in a new tab.
-      return `<a href="${href.href}" title="${title || ''}" target="_blank" rel="noopener noreferrer" class="text-green-500">${text}</a>`;
+      return `<img src="${src}" alt="${text || 'User-embedded image'}" class="my-4 rounded-lg shadow-md max-w-full h-auto ${alignClass}" loading="lazy">`;
     };
 
     // Override heading rendering to add IDs and anchor links
-    renderer.heading = (textObj) => {
-      const text = textObj.text || '';
-      const level = parseInt(textObj.depth, 10);
+    renderer.heading = ({ text, depth }) => {
       const escapedText = slugify(text, { lower: true, strict: true });
       return `
-        <h${level} id="${escapedText}" class="group relative text-2xl font-bold mb-6 dark:text-white">
+        <h${depth} id="${escapedText}" class="group relative text-2xl font-bold mb-6 dark:text-white">
           <a href="#${escapedText}" class="absolute -left-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-50 transition-opacity" aria-hidden="true">
             <span class="text-gray-400 dark:text-gray-600">🔗</span>
           </a>
           ${text}
-        </h${level}>
+        </h${depth}>
       `;
     };
-    
-    // Use the custom renderer when parsing the markdown
-    const htmlContent = marked.parse(article.content, { renderer });
+
+    // 1. Parse Markdown to HTML
+    const rawHtml = marked.parse(article.content, { renderer });
+
+    // 2. Sanitize the HTML (prevent XSS)
+    // We strictly allow specific attributes to preserve your custom styling and logic
+    const htmlContent = DOMPurify.sanitize(rawHtml, {
+      ADD_TAGS: ['img'], // Ensure images are allowed
+      ADD_ATTR: ['target', 'class', 'id', 'rel', 'loading'], // Allow attributes used in your custom renderer
+    });
+
     // --- END OF NEW CODE ---
 
     const pageUrl = `${process.env.BASE_URL}/articles/${article.slug}`;
@@ -164,7 +204,7 @@ export const renderHomepage = async (req, res) => {
       orderBy: { viewCount: 'desc' },
       take: 5,
     });
-    
+
     const latestArticles = await prisma.article.findMany({
       where: { published: true, ...visibilityFilter },
       include: { author: true },
@@ -321,22 +361,75 @@ export const updateArticle = async (req, res) => {
       return res.status(403).send('Forbidden');
     }
 
-    const newSlug = slugify(title, { lower: true, strict: true });
+    const finalSlug = await generateUniqueSlug(title);
+       const updateData = {
+      title,
+      content,
+      excerpt,
+      slug: finalSlug,
+      published: action === 'publish',
+    };
+
+    // Handle new header image upload
+    if (req.file) {
+      const { publicUrl, fileName } = await processAndUploadImage(
+        req.file.buffer,
+        req.file.originalname,
+        { resize: { width: 960, height: 540 } }
+      );
+      updateData.headerImageUrl = publicUrl;
+      await prisma.uploadedFile.create({
+        data: { url: publicUrl, fileName, userId: req.user.id },
+      });
+    }
 
     const updatedArticle = await prisma.article.update({
       where: { slug },
-      data: {
-        title,
-        content,
-        excerpt,
-        slug: newSlug,
-        published: action === 'publish',
-      },
+      data: updateData,
     });
 
     res.redirect(`/articles/${updatedArticle.slug}`);
   } catch (error) {
     console.error('Error updating article:', error);
     res.redirect(`/`);
+  }
+};
+
+
+
+// In controllers/articleController.js
+
+export const getLeaderboard = async (req, res) => {
+  try {
+    // 1. Fetch all users and include their articles (only the views field is needed)
+    const authors = await prisma.user.findMany({
+      include: {
+        articles: {
+          select: { viewCount: true }, 
+          where: { published: true }
+        }
+      }
+    });
+
+    // 2. Calculate total views for each author
+    const leaderboard = authors.map(author => {
+      const totalViews = author.articles.reduce((sum, article) => sum + (article.viewCount || 0), 0);
+      
+      return {
+        username: author.name, // or author.name, depending on your schema
+        articleCount: author.articles.length,
+        totalViews: totalViews
+      };
+    });
+
+    // 3. Sort authors by total views (Highest to Lowest)
+    leaderboard.sort((a, b) => b.totalViews - a.totalViews);
+
+    // 4. Render the view
+    res.render('pages/leaderboard', { authors: leaderboard, user: req.user });
+    
+  } catch (error) {
+    console.error('Leaderboard error:', error);
+    res.status(500).render('articles/index', { articles: [], error: 'Could not load leaderboard' }); // Fallback
   }
 };

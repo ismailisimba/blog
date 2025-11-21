@@ -1,111 +1,203 @@
 <%- include('../../partials/_header', { user: user }) %>
 
-<div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-md">
-  <h2 class="text-2xl mb-6 px-6 text-gray-300">Edit Article</h2>
-  
-  <%# The form action now points to the update route with the method override %>
-  <form action="/articles/<%= article.slug %>?_method=PUT" method="POST" class="dark:bg-gray-200 px-6 py-4 space-y-6">
-    <div>
-      <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
-      <%# Pre-populate the value attribute %>
-      <input type="text" name="title" id="title" required value="<%= article.title %>" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+  <div class="max-w-4xl mx-auto bg-gray-900 p-8 rounded-lg shadow-md">
+    <h2 class="text-2xl mb-6 px-6 text-gray-300">Edit Article</h2>
+
+    <%# The form action now points to the update route with the method override %>
+      <form action="/articles/<%= article.slug %>?_method=PUT" method="POST" enctype="multipart/form-data"
+        class="dark:bg-gray-400 px-6 py-4 space-y-6 articleForm">
+        <div>
+          <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
+          <%# Pre-populate the value attribute %>
+            <input type="text" name="title" id="title" required value="<%= article.title %>"
+              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+        </div>
+
+        <div class="mb-4">
+        <label for="headerImage" class="block text-sm font-medium text-gray-700">Header Image (960x540)</label>
+        <input type="file" id="headerImage" name="headerImage" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary" accept="image/*">
+        <div id="imagePreviewContainer" class="mt-4">
+            <% if (typeof article !== 'undefined' && article.headerImageUrl) { %>
+                <img src="<%= article.headerImageUrl %>" class="max-w-xs rounded">
+            <% } %>
+        </div>
     </div>
-    
-    <%# Note: We are not including the file upload on the edit page for simplicity. %>
-    <%# Adding "edit image" functionality requires more complex logic. %>
 
-    <!-- Add this inside your form in both create.ejs and edit.ejs -->
-
-<div class="mb-4">
-    <label for="excerpt" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Excerpt (for SEO & Previews)</label>
-    <textarea id="excerpt" name="excerpt" rows="3" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="A short, catchy summary... (max 160 characters recommended)"><%= typeof article !== 'undefined' ? article.excerpt : '' %></textarea>
-</div>
-
-
-    <div>
-      <label for="content" class="block text-sm font-medium text-gray-700">Content</label>
-      <%# Pre-populate the content between the textarea tags %>
-      <textarea name="content" id="markdown-editor"><%= article.content %></textarea>
+    <!-- Cropper Modal -->
+   <div id="cropperModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center hidden z-50">
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-lg max-w-3xl w-full">
+            <h3 class="text-xl font-bold mb-4 dark:text-white">Crop Header Image</h3>
+            <div>
+                <img id="imageToCrop" src="">
+            </div>
+            <div class="mt-4 flex justify-end space-x-2">
+                <button type="button" id="cancelCrop" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">Cancel</button>
+                <button type="button" id="cropButton" class="bg-primary hover:bg-accent text-white font-bold py-2 px-4 rounded">Crop & Use Image</button>
+            </div>
+        </div>
     </div>
+
+
     
-    <button type="submit" name="action" value="publish" class="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 ">Publish Article</button>
-  <button type="submit" name="action" value="save_draft" class="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
-    Save as Draft
-  </button>
-  </form>
-</div>
 
-<script>
-  function uploadFileAndInsertLink(file, editor) {
-    const formData = new FormData();
-    formData.append('file', file);
+            <!-- Add this inside your form in both create.ejs and edit.ejs -->
 
-    fetch('/api/upload', {
-      method: 'POST',
-      body: formData,
-    })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return response.json();
-    })
-    .then(data => {
-      const fileUrl = data.url;
-      const cm = editor.codemirror;
-      const doc = cm.getDoc();
-      const cursor = doc.getCursor();
+           <div class="mb-4">
+      <label for="excerpt" class="block text-sm font-medium text-gray-700">Excerpt (for SEO & Previews)</label>
+      <textarea id="excerpt" name="excerpt" rows="3"
+        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
+        placeholder="A short, catchy summary... (max 160 characters recommended)"><%= typeof article !== 'undefined' ? article.excerpt : '' %></textarea>
+    </div>
 
-      // Check file extension to decide on link format
-      const isImage = /\.(jpe?g|png|gif)$/i.test(fileUrl);
-      let linkMarkdown;
+            <div>
+              <label for="content" class="block text-sm font-medium text-gray-700">Content</label>
+              <%# Pre-populate the content between the textarea tags %>
+                <textarea name="content" id="markdown-editor"><%= article.content %></textarea>
+            </div>
 
-      if (isImage) {
-        // Insert image markdown
-        linkMarkdown = `![${file.name}](${fileUrl})`;
-      } else {
-        // Insert standard link markdown for other files
-        linkMarkdown = `[${file.name}](${fileUrl})`;
-      }
-      
-      doc.replaceRange(linkMarkdown, cursor);
-    })
-    .catch(error => {
-      console.error('Upload failed:', error);
-      alert('File upload failed!');
-    });
-  }
+            <input type="file" id="imageUploadInput" style="display: none;" accept="image/*">
 
-  const easyMDE = new EasyMDE({
-    element: document.getElementById('markdown-editor'),
-    spellChecker: false,
-    // Enable image handling
-    uploadImage: true,
-    // Define our custom uploader
-    imageUploadFunction: (file, onSuccess, onError) => {
-      // EasyMDE's API is designed for a success callback, but our fetch logic handles it.
-      // We'll wrap our function to fit this.
-      uploadFileAndInsertLink(file, easyMDE);
-      // We call onSuccess to prevent EasyMDE from showing its own error message.
-      onSuccess("upload handled by custom function"); 
-    },
-    // Custom handler for pasting files
-    previewClass: ["editor-preview", "prose", "lg:prose-xl"],
-    // You might need to add other options here from your previous setup
-  });
+            <button type="submit" name="action" value="publish"
+              class="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 ">Publish
+              Article</button>
+            <button type="submit" name="action" value="save_draft"
+              class="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+              Save as Draft
+            </button>
+      </form>
+  </div>
 
-  // Add a paste event listener for more robust file handling
-  easyMDE.codemirror.on('paste', (cm, event) => {
-    const items = (event.clipboardData || event.originalEvent.clipboardData).items;
-    for (const item of items) {
-      if (item.kind === 'file') {
-        event.preventDefault();
-        const file = item.getAsFile();
-        uploadFileAndInsertLink(file, easyMDE);
-      }
+   <script>
+
+    const customToolbar = [
+          "bold",
+          "italic",
+          "strikethrough",
+          "|",
+          "heading",
+          "heading-smaller",
+          "heading-bigger",
+          "|",
+          "code",
+          "quote",
+          "unordered-list",
+          "ordered-list",
+          "clean-block",
+          "|",
+          "link",
+          {
+            name: "image",
+            action: myCustomImageAction, // Assign your custom function
+            className: "fa fa-image",
+            title: "Insert Image",
+          },
+          "table",
+          "horizontal-rule",
+          "|",
+          "preview",
+          "side-by-side",
+          "fullscreen",
+          "|",
+          "guide"
+    ];
+
+    function myCustomImageAction(editor) {
+    // 1. Find the hidden input
+    const input = document.getElementById('imageUploadInput');
+
+    if (!input) {
+        console.error('Hidden input #imageUploadInput not found in DOM.');
+        return;
     }
-  });
-</script>
+
+    // 2. Reset value allows uploading the same file twice in a row
+    input.value = '';
+
+    // 3. Bind the change event
+    // We use .onchange to overwrite any previous listener prevents duplicate uploads
+    input.onchange = function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            // Call your existing upload helper
+            uploadFileAndInsertLink(file, editor);
+        }
+    };
+
+    // 4. Trigger the system file dialog
+    input.click();
+}
+
+    function uploadFileAndInsertLink(file, editor) {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then(data => {
+          const fileUrl = data.url;
+          const cm = editor.codemirror;
+          const doc = cm.getDoc();
+          const cursor = doc.getCursor();
+
+          // Check file extension to decide on link format
+          const isImage = /\.(jpe?g|png|gif)$/i.test(fileUrl);
+          let linkMarkdown;
+
+          if (isImage) {
+            // Insert image markdown
+            linkMarkdown = `![${file.name}](${fileUrl})`;
+          } else {
+            // Insert standard link markdown for other files
+            linkMarkdown = `[${file.name}](${fileUrl})`;
+          }
+
+          doc.replaceRange(linkMarkdown, cursor);
+        })
+        .catch(error => {
+          console.error('Upload failed:', error);
+          alert('File upload failed!');
+        });
+    }
+
+    const easyMDE = new EasyMDE({
+      element: document.getElementById('markdown-editor'),
+      toolbar: customToolbar,
+      spellChecker: false,
+      // Enable image handling
+      uploadImage: true,
+      // Define our custom uploader
+      imageUploadFunction: (file, onSuccess, onError) => {
+        // EasyMDE's API is designed for a success callback, but our fetch logic handles it.
+        // We'll wrap our function to fit this.
+        uploadFileAndInsertLink(file, easyMDE);
+        // We call onSuccess to prevent EasyMDE from showing its own error message.
+        //onSuccess("upload handled by custom function");
+      },
+      // Custom handler for pasting files
+      previewClass: ["editor-preview", "prose", "lg:prose-xl"],
+      // You might need to add other options here from your previous setup
+    });
+
+    // Add a paste event listener for more robust file handling
+    easyMDE.codemirror.on('paste', (cm, event) => {
+      const items = (event.clipboardData || event.originalEvent.clipboardData).items;
+      for (const item of items) {
+        if (item.kind === 'file') {
+          event.preventDefault();
+          const file = item.getAsFile();
+          uploadFileAndInsertLink(file, easyMDE);
+        }
+      }
+    });
+  </script>
 
 
-<%- include('../../partials/_footer') %>
+  <%- include('../../partials/_footer') %>

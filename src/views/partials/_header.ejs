@@ -1,71 +1,126 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-      <!-- SEO Meta Tags -->
-    <title><%= locals.seo ? seo.title : 'Artsy Thoughts' %></title>
-    <meta name="description" content="<%= locals.seo ? seo.description : 'A creative space for artistic ideas and thoughts.' %>">
+    <!-- SEO Meta Tags -->
+    <title>
+        <%= locals.seo ? seo.title : 'Mnembo Blog' %>
+    </title>
+    <meta name="description"
+        content="<%= locals.seo ? seo.description : 'A creative space for artistic ideas and thoughts.' %>">
     <link rel="canonical" href="<%= locals.seo ? seo.url : 'https://blog.mnembo.com' %>">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="<%= locals.seo ? seo.type : 'website' %>">
     <meta property="og:url" content="<%= locals.seo ? seo.url : 'https://blog.mnembo.com' %>">
-    <meta property="og:title" content="<%= locals.seo ? seo.title : 'Artsy Thoughts' %>">
-    <meta property="og:description" content="<%= locals.seo ? seo.description : 'A creative space for artistic ideas and thoughts.' %>">
-    <meta property="og:image" content="<%= locals.seo ? seo.image : 'https://blog.mnembo.com/default-share-image.jpg' %>">
+    <meta property="og:title" content="<%= locals.seo ? seo.title : 'Mnembo Blog' %>">
+    <meta property="og:description"
+        content="<%= locals.seo ? seo.description : 'A creative space for artistic ideas and thoughts.' %>">
+    <meta property="og:image"
+        content="<%= locals.seo ? seo.image : 'https://blog.mnembo.com/default-share-image.jpg' %>">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="<%= locals.seo ? seo.url : 'https://blog.mnembo.com' %>">
-    <meta property="twitter:title" content="<%= locals.seo ? seo.title : 'Artsy Thoughts' %>">
-    <meta property="twitter:description" content="<%= locals.seo ? seo.description : 'A creative space for artistic ideas and thoughts.' %>">
-    <meta property="twitter:image" content="<%= locals.seo ? seo.image : 'https://blog.mnembo.com/default-share-image.jpg' %>">
+    <meta property="twitter:title" content="<%= locals.seo ? seo.title : 'Mnembo Blog' %>">
+    <meta property="twitter:description"
+        content="<%= locals.seo ? seo.description : 'A creative space for artistic ideas and thoughts.' %>">
+    <meta property="twitter:image"
+        content="<%= locals.seo ? seo.image : 'https://blog.mnembo.com/default-share-image.jpg' %>">
 
     <!-- RSS Feed Discovery -->
-    <link rel="alternate" type="application/rss+xml" title="RSS Feed for Artsy Thoughts" href="/feed.xml">
+    <link rel="alternate" type="application/rss+xml" title="RSS Feed for Mnembo Blog" href="/feed.xml">
 
 
-    <title>Artsy Thoughts</title>
+    <title>Mnembo Blog</title>
     <link rel="stylesheet" href="/css/output.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css">
     <link rel="stylesheet" href="/js/styles/atom-one-dark-reasonable.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css" />
+    <link rel="stylesheet" href="/css/custom.css">
     <script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
 </head>
+
 <body class="bg-background dark:bg-gray-900 font-sans">
     <header class="bg-white dark:bg-gray-800 shadow-sm">
         <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <a href="/" class="text-2xl font-bold text-primary dark:text-white">Artsy Thoughts</a>
-            <div class="flex items-center space-x-6">
-                <a href="/articles" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-white">All Articles</a>
+            <a href="/" class="text-2xl font-bold text-primary dark:text-white">Mnembo Blog</a>
+            <div class="hidden md:flex items-center space-x-6">
+                <a href="/articles"
+                    class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-white">All Articles</a>
+
+                    <a href="/leaderboard"
+                    class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-white">Authors</a>
 
                 <% if (locals.user) { %>
                     <!-- Logged-in user links -->
-                    <a href="/my-articles" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-white">My Articles</a>
-                    <a href="/profile" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-white">Profile</a>
+                    <a href="/my-articles"
+                        class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-white">My
+                        Articles</a>
+                    <a href="/profile"
+                        class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-white">Profile</a>
 
+                    <% if (user.role==='ADMIN' ) { %>
+                        <a href="/admin/users"
+                            class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-white">Admin
+                            Panel</a>
+                        <% } %>
+
+                            <a href="/logout"
+                                class="bg-primary hover:bg-accent text-white font-bold py-2 px-4 rounded-md transition-colors">Logout</a>
+                            <a href="/articles/new"
+                                class="bg-accent hover:bg-primary text-white font-bold py-2 px-4 rounded-md transition-colors">New
+                                Post</a>
+                            <% } else { %>
+                                <!-- Guest user links -->
+                                <a href="/login"
+                                    class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-white">Login</a>
+                                <a href="/register"
+                                    class="bg-primary hover:bg-accent text-white font-bold py-2 px-4 rounded-md transition-colors">Register</a>
+                                <% } %>
+            </div>
+             <!-- Hamburger Button (Visible on mobile) -->
+            <div class="md:hidden">
+                <button id="mobile-menu-button" class="p-2 rounded-md text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary">
+                    <span class="sr-only">Open main menu</span>
+                    <!-- Heroicon name: menu -->
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+            </div>
+
+
+        </nav>
+
+          <!-- Mobile Menu (Hidden by default) -->
+        <div id="mobile-menu" class="hidden md:hidden">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white dark:bg-gray-800 shadow-lg">
+                <a href="/articles" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">All Articles</a>
+                <a href="/leaderboard" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">Authors</a>
+                <% if (locals.user) { %>
+                    <a href="/my-articles" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">My Articles</a>
+                    <a href="/profile" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">Profile</a>
                     <% if (user.role === 'ADMIN') { %>
-                        <a href="/admin/users" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-white">Admin Panel</a>
+                        <a href="/admin/users" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">Admin Panel</a>
                     <% } %>
-
-                    <a href="/logout" class="bg-primary hover:bg-accent text-white font-bold py-2 px-4 rounded-md transition-colors">Logout</a>
-                    <a href="/articles/new" class="bg-accent hover:bg-primary text-white font-bold py-2 px-4 rounded-md transition-colors">New Post</a>
+                    <a href="/articles/new" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">New Post</a>
+                    <a href="/logout" class="block px-3 py-2 rounded-md text-base font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-gray-700">Logout</a>
                 <% } else { %>
-                    <!-- Guest user links -->
-                    <a href="/login" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-white">Login</a>
-                    <a href="/register" class="bg-primary hover:bg-accent text-white font-bold py-2 px-4 rounded-md transition-colors">Register</a>
+                    <a href="/login" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">Login</a>
+                    <a href="/register" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">Register</a>
                 <% } %>
             </div>
-        </nav>
+        </div>
+
     </header>
 
 
 
-    
-
-
-    
+   
