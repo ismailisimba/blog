@@ -29,12 +29,12 @@ app.use(methodOverride('_method'));
 
 const PgStore = connectPgSimple(session);
 const pgPool = new pg.Pool({
-  //connectionString: process.env.DATABASE_URL,
-  user: 'postgres',
+  connectionString: process.env.DATABASE_URL,
+  /*user: 'postgres',
   host: 'localhost',
   database: 'postgres',
   password: process.env.DB_PASSWORD, // <-- ADD THIS LINE
-  port: 5432,
+  port: 5432,*/
 
 });
 
