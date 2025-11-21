@@ -1,5 +1,6 @@
 <%- include('../../partials/_header', { user: user }) %>
 
+  <div class="max-w-4xl mx-auto bg-gray-900 p-8 rounded-lg shadow-md">
 <h1 class="text-1xl font-bold border-b-2 border-primary pb-2 mb-6 px-6 text-gray-200"><%= pageTitle %></h1>
 
 <div class="space-y-4 px-6 text-gr">
@@ -26,5 +27,5 @@
     <p>You haven't created any articles yet. <a href="/articles/new" class="text-primary hover:underline">Write your first one!</a></p>
   <% } %>
 </div>
-
+  </div>
 <%- include('../../partials/_footer') %>

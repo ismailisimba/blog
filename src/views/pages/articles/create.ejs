@@ -1,6 +1,8 @@
 <%- include('../../partials/_header', { user: user }) %>
 
-  <h2 class="text-2xl mb-6 px-6 text-gray-300">Create New Article</h2>
+
+  <div class="max-w-4xl mx-auto bg-gray-900 p-8 rounded-lg shadow-md"> 
+<h2 class="text-2xl mb-6 px-6 text-gray-300">Create New Article</h2>
   <!-- Add enctype here! -->
   <form action="/articles" method="POST" enctype="multipart/form-data" class="dark:bg-gray-400 px-6 py-4 space-y-6 articleForm">
     <div>
@@ -62,6 +64,7 @@
     </button>
     
   </form>
+  </div>
 
   <script>
 
