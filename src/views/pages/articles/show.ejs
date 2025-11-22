@@ -48,7 +48,15 @@
     <div class="flex items-center text-gray-600 dark:text-gray-400 mb-6">
       <span>By <%= article.author.name %></span>
       <span class="mx-2">&bull;</span>
-      <span><%= new Date(article.createdAt).toLocaleDateString() %></span>
+      <span><%= new Date(article.createdAt).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  timeZone: 'Africa/Nairobi' 
+              }) %>
+        </span>
        <span class="mx-2">&bull;</span>
       <span><%= article.viewCount %> views</span>
     </div>

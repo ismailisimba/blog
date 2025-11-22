@@ -26,12 +26,15 @@ model User {
   googleId      String?  @unique
   role          Role     @default(USER)
   emailVerified Boolean  @default(false)
+  isBanned      Boolean  @default(false)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   articles      Article[]
   comments      Comment[]
   uploadedFiles UploadedFile[] // Relation to uploaded files
+  verificationToken String? @unique
+  verificationTokenExpires DateTime?
 }
 
 model Article {

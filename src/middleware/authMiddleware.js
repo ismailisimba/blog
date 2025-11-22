@@ -34,3 +34,11 @@ export const hasAnyRole = (roles) => {
     res.status(403).send('Forbidden: You do not have permission for this action.');
   };
 };
+
+// Checks if user is banned
+export const isNotBanned = (req, res, next) => {
+  if (req.isAuthenticated() && req.user.isBanned) {
+    return res.status(403).send('Forbidden: Your account has been banned.');
+  }
+  next();
+};

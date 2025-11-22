@@ -80,7 +80,7 @@ export const renderUserManagement = async (req, res) => {
 export const toggleModerator = async (req, res) => {
     try {
         const { userId } = req.params;
-        
+
         const userToUpdate = await prisma.user.findUnique({
             where: { id: userId }
         });
@@ -103,6 +103,37 @@ export const toggleModerator = async (req, res) => {
         res.redirect('/admin/users');
     } catch (error) {
         console.error('Error toggling moderator status:', error);
+        res.redirect('/admin/users');
+    }
+};
+
+// Toggle a user's banned status
+export const toggleBan = async (req, res) => {
+    try {
+        const { userId } = req.params;
+
+        const userToUpdate = await prisma.user.findUnique({
+            where: { id: userId }
+        });
+
+        if (!userToUpdate) {
+            return res.status(404).send('User not found.');
+        }
+
+        if (userToUpdate.role === 'ADMIN') {
+            return res.status(403).send('Cannot ban an Admin.');
+        }
+
+        const newBanStatus = !userToUpdate.isBanned;
+
+        await prisma.user.update({
+            where: { id: userId },
+            data: { isBanned: newBanStatus }
+        });
+
+        res.redirect('/admin/users');
+    } catch (error) {
+        console.error('Error toggling ban status:', error);
         res.redirect('/admin/users');
     }
 };

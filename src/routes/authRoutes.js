@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { renderRegister, registerUser, renderLogin, loginUser, logoutUser } from '../controllers/authController.js';
+import { renderRegister, registerUser, renderLogin, loginUser, logoutUser, verifyEmail } from '../controllers/authController.js';
 import passport from 'passport';
 
 const router = Router();
@@ -9,6 +9,8 @@ router.post('/register', registerUser);
 router.get('/login', renderLogin);
 router.post('/login', loginUser);
 router.get('/logout', logoutUser);
+router.get('/verify-email', verifyEmail);
+router.get('/check-email', (req, res) => res.render('pages/check-email'));
 
 // Google OAuth routes
 router.get('/auth/google',
