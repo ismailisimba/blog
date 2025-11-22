@@ -15,11 +15,11 @@ export const sendVerificationEmail = async (email, token) => {
   const msg = {
     to: email,
     from: process.env.FROM_EMAIL || 'noreply@example.com', // Change to your verified sender
-    subject: 'Verify your email for Artsy Thoughts',
+    subject: 'Verify your email for Mnembo Blog',
     text: `Please verify your email by clicking on this link: ${verificationUrl}`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2>Welcome to Artsy Thoughts!</h2>
+        <h2>Welcome to Mnembo Blog!</h2>
         <p>Please verify your email address to complete your registration.</p>
         <p>
           <a href="${verificationUrl}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Verify Email</a>
