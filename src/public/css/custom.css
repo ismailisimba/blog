@@ -36,3 +36,27 @@
 .editor-statusbar{
     color:var(--color-gray-900)
 }
+
+
+
+
+
+
+.CodeMirror {
+  color: #c9d1d9 !important;
+  background-color: #0d1117 !important;
+  border-color: #30363d !important;
+}
+.editor-toolbar {
+  color: #c9d1d9 !important;
+  background-color: #161b22 !important;
+  border: none !important;
+}
+.cm-s-easymde .CodeMirror-cursor {
+  border-color: #c9d1d9 !important;
+}
+.editor-preview,
+.editor-preview-side {
+  background-color: #0d1117 !important;
+  color: #c9d1d9 !important;
+}
