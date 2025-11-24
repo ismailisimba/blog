@@ -22,6 +22,7 @@
     --color-green-500: oklch(72.3% 0.219 149.579);
     --color-green-600: oklch(62.7% 0.194 149.214);
     --color-green-700: oklch(52.7% 0.154 150.069);
+    --color-blue-50: oklch(97% 0.014 254.604);
     --color-blue-100: oklch(93.2% 0.032 255.585);
     --color-blue-400: oklch(70.7% 0.165 254.624);
     --color-blue-500: oklch(62.3% 0.214 259.815);
@@ -37,6 +38,9 @@
     --color-gray-700: oklch(37.3% 0.034 259.733);
     --color-gray-800: oklch(27.8% 0.033 256.848);
     --color-gray-900: oklch(21% 0.034 264.665);
+    --color-stone-50: oklch(98.5% 0.001 106.423);
+    --color-stone-500: oklch(55.3% 0.013 58.071);
+    --color-stone-700: oklch(37.4% 0.01 67.558);
     --color-black: #000;
     --color-white: #fff;
     --spacing: 0.25rem;
@@ -824,6 +828,9 @@
   .text-red-700 {
     color: var(--color-red-700);
   }
+  .text-stone-500 {
+    color: var(--color-stone-500);
+  }
   .text-white {
     color: var(--color-white);
   }
@@ -918,6 +925,49 @@
       }
     }
   }
+  .file\:mr-5 {
+    &::file-selector-button {
+      margin-right: calc(var(--spacing) * 5);
+    }
+  }
+  .file\:border-\[1px\] {
+    &::file-selector-button {
+      border-style: var(--tw-border-style);
+      border-width: 1px;
+    }
+  }
+  .file\:bg-stone-50 {
+    &::file-selector-button {
+      background-color: var(--color-stone-50);
+    }
+  }
+  .file\:px-3 {
+    &::file-selector-button {
+      padding-inline: calc(var(--spacing) * 3);
+    }
+  }
+  .file\:py-1 {
+    &::file-selector-button {
+      padding-block: calc(var(--spacing) * 1);
+    }
+  }
+  .file\:text-xs {
+    &::file-selector-button {
+      font-size: var(--text-xs);
+      line-height: var(--tw-leading, var(--text-xs--line-height));
+    }
+  }
+  .file\:font-medium {
+    &::file-selector-button {
+      --tw-font-weight: var(--font-weight-medium);
+      font-weight: var(--font-weight-medium);
+    }
+  }
+  .file\:text-stone-700 {
+    &::file-selector-button {
+      color: var(--color-stone-700);
+    }
+  }
   .hover\:-translate-y-1 {
     &:hover {
       @media (hover: hover) {
@@ -1000,6 +1050,33 @@
     &:hover {
       @media (hover: hover) {
         text-decoration-line: underline;
+      }
+    }
+  }
+  .hover\:file\:cursor-pointer {
+    &:hover {
+      @media (hover: hover) {
+        &::file-selector-button {
+          cursor: pointer;
+        }
+      }
+    }
+  }
+  .hover\:file\:bg-blue-50 {
+    &:hover {
+      @media (hover: hover) {
+        &::file-selector-button {
+          background-color: var(--color-blue-50);
+        }
+      }
+    }
+  }
+  .hover\:file\:text-blue-700 {
+    &:hover {
+      @media (hover: hover) {
+        &::file-selector-button {
+          color: var(--color-blue-700);
+        }
       }
     }
   }

@@ -13,9 +13,16 @@
               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
         </div>
 
-        <div class="mb-4">
+         <div class="mb-4">
         <label for="headerImage" class="block text-sm font-medium text-gray-700">Header Image (960x540)</label>
-        <input type="file" id="headerImage" name="headerImage" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary" accept="image/*">
+        <input type="file" id="headerImage" name="headerImage"
+            class="text-sm text-stone-500
+                  file:mr-5 file:py-1 file:px-3 file:border-[1px]
+                  file:text-xs file:font-medium
+                  file:bg-stone-50 file:text-stone-700
+                  hover:file:cursor-pointer hover:file:bg-blue-50
+                  hover:file:text-blue-700" 
+          accept="image/*">
         <div id="imagePreviewContainer" class="mt-4">
             <% if (typeof article !== 'undefined' && article.headerImageUrl) { %>
                 <img src="<%= article.headerImageUrl %>" class="max-w-xs rounded">
