@@ -37,6 +37,11 @@
     color:var(--color-gray-900)
 }
 
+.prose p{
+    margin-bottom: 24px;
+    margin-top: 8px;
+}
+
 
 
 
