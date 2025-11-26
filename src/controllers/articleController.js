@@ -100,10 +100,16 @@ export const showArticle = async (req, res) => {
         return null; // Pretend it doesn't exist for normal users
       }
 
-      await tx.article.update({
-        where: { slug },
-        data: { viewCount: { increment: 1 } },
-      });
+      if( articleData.published === false ) {
+
+      }else{
+        await tx.article.update({
+          where: { slug },
+          data: { viewCount: { increment: 1 } },
+        });
+      }
+
+      
 
       return articleData;
     });
